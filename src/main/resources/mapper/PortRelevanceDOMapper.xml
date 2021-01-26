@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="www.pactera.com.coverage.project.dao.objectDao.PortRelevanceDOMapper">
+    <resultMap id="BaseResultMap" type="www.pactera.com.coverage.project.dao.objectDo.PortRelevanceDO">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="project_name" jdbcType="VARCHAR" property="projectName"/>
+        <result column="project_port" jdbcType="VARCHAR" property="port"/>
+        <result column="is_delete" jdbcType="VARCHAR" property="isDelete"/>
+    </resultMap>
+
+    <select id="selectPort" resultMap="BaseResultMap">
+        select * from project_port_relevance where project_name = #{projectName,jdbcType=VARCHAR} and is_delete = 'N' ;
+    </select>
+
+</mapper>

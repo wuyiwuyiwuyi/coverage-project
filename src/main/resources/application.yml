@@ -1,0 +1,33 @@
+server:
+  port: 8091
+
+create:
+  coverage:
+    filePath: C:\Users\v_yyyiwu\Desktop\pactera-tools
+
+spring:
+  application:
+    name: Jacoco-pactera
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/jacoco_pactera?serverTimezone=GMT%2B8
+    username: root
+    password: wuyi
+
+mybatis:
+  mapper-locations: classpath*:mapper/*.xml
+
+mapper:
+  #公用接口类路径
+  mappers: tk.mybatis.mapper.common.Mapper
+  identity: MYSQL
+
+pagehelper:
+  helperDialect: mysql
+  reasonable: true
+  supportMethodsArguments: true
+  params: count=countSql
+
+  #logging:
+  #config: classpath:logback-spring.xml

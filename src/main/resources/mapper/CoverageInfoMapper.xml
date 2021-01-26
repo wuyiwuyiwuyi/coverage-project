@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="www.pactera.com.coverage.project.dao.objectDao.CoverageInfoDoMapper">
+    <resultMap id="BaseResultMap" type="www.pactera.com.coverage.project.dao.objectDo.CoverageInfoDO">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="project_name" jdbcType="VARCHAR" property="projectName"/>
+        <result column="version_number" jdbcType="VARCHAR" property="versionNumber"/>
+        <result column="phase" jdbcType="VARCHAR" property="phase"/>
+        <result column="status" jdbcType="VARCHAR" property="status"/>
+        <result column="type" jdbcType="VARCHAR" property="type"/>
+        <result column="coverage_line" jdbcType="VARCHAR" property="coverageLine"/>
+        <result column="total_line" jdbcType="VARCHAR" property="totalLine"/>
+        <result column="coverage_rate" jdbcType="VARCHAR" property="coverageRate"/>
+        <result column="operator" jdbcType="VARCHAR" property="operator"/>
+        <result column="operation_time" jdbcType="TIMESTAMP" property="operationTime"/>
+        <result column="is_delete" jdbcType="VARCHAR" property="isDelete"/>
+        <result column="is_merge" jdbcType="VARCHAR" property="isMerge"/>
+    </resultMap>
+
+    <select id="selectProjectCoverage" resultMap="BaseResultMap">
+        select * from project_coverage_info where project_name = #{projectName,jdbcType=VARCHAR}
+        and version_number = #{versionNumber,jdbcType=VARCHAR}
+        and operator = #{operator,jdbcType=VARCHAR};
+    </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        select * from project_coverage_info
+    </select>
+
+    <insert id="insert" parameterType="www.pactera.com.coverage.project.dao.objectDo.CoverageInfoDO">
+        insert into project_coverage_info(id, `project_name`, `version_number`, `phase`, `status`, `type`, `coverage_line`, total_line,
+        `coverage_rate`, `operator`, `operation_time`,`is_delete`,`is_merge`) values(#{id,jdbcType=INTEGER}, #{projectName,jdbcType=VARCHAR}, #{versionNumber,jdbcType=VARCHAR},
+        #{phase,jdbcType=VARCHAR}, #{status,jdbcType=VARCHAR}, #{type,jdbcType=VARCHAR}, #{coverageLine,jdbcType=VARCHAR}, #{totalLine,jdbcType=VARCHAR},
+        #{coverageRate,jdbcType=VARCHAR}, #{operator,jdbcType=VARCHAR},#{operationTime,jdbcType=TIMESTAMP}, #{isDelete,jdbcType=VARCHAR}, #{isMerge,jdbcType=VARCHAR});
+    </insert>
+
+    <select id="selectCoverageInfoDOLists" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select * from project_coverage_info where 1= 1
+        <if test="projectName !='' and null != projectName">
+            and project_name = #{projectName,jdbcType=VARCHAR}
+        </if>
+        <if test="versionNumber != '' and null != versionNumber">
+            and version_number = #{versionNumber,jdbcType=VARCHAR}
+        </if>
+        <if test="operator != '' and null != operator">
+            and operator =  #{operator,jdbcType=VARCHAR}
+        </if>
+        <if test="null != startTime">
+            and operation_time &gt;= #{startTime,jdbcType=TIMESTAMP}
+        </if>
+        <if test="null != endTime">
+            and operation_time &lt;= #{endTime,jdbcType=TIMESTAMP}
+        </if>
+        <if test="status != '' and null != status">
+            and status = #{status,jdbcType=VARCHAR}
+        </if>
+        order by operation_time desc
+    </select>
+
+    <update id="update" parameterType="www.pactera.com.coverage.project.dao.objectDo.CoverageInfoDO">
+        update project_coverage_info set is_delete = 'N'
+        <if test="coverageInfoDO.phase != '' and null != coverageInfoDO.phase">
+            ,phase = #{coverageInfoDO.phase,jdbcType=VARCHAR}
+        </if>
+        <if test="coverageInfoDO.status != '' and null != coverageInfoDO.status">
+            ,status = #{coverageInfoDO.status,jdbcType=VARCHAR}
+        </if>
+        <if test="coverageInfoDO.type != '' and null != coverageInfoDO.type">
+            ,type = #{coverageInfoDO.type,jdbcType=VARCHAR}
+        </if>
+        <if test="coverageInfoDO.coverageLine != '' and null != coverageInfoDO.coverageLine">
+            ,coverage_line = #{coverageInfoDO.coverageLine,jdbcType=VARCHAR}
+        </if>
+        <if test="coverageInfoDO.totalLine != '' and null != coverageInfoDO.totalLine">
+            ,total_line = #{coverageInfoDO.totalLine,jdbcType=VARCHAR}
+        </if>
+        <if test="coverageInfoDO.coverageRate != '' and null != coverageInfoDO.coverageRate">
+            ,coverage_rate = #{coverageInfoDO.coverageRate,jdbcType=VARCHAR}
+        </if>
+        <if test="null != coverageInfoDO.operationTime">
+            ,operation_time = #{coverageInfoDO.operationTime,jdbcType=TIMESTAMP}
+        </if>
+        where project_name = #{coverageInfoDO.projectName,jdbcType=VARCHAR}
+        and version_number = #{coverageInfoDO.versionNumber,jdbcType=VARCHAR}
+        and operator = #{coverageInfoDO.operator,jdbcType=VARCHAR};
+    </update>
+
+    <update id="updateStatus" parameterType="java.lang.String">
+        update project_coverage_info set status = #{status,jdbcType=VARCHAR} where project_name = #{projectName,jdbcType=VARCHAR}
+        and version_number = #{versionNumber,jdbcType=VARCHAR} and operator = #{operator,jdbcType=VARCHAR};
+    </update>
+
+</mapper>

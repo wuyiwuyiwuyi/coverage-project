@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="www.pactera.com.coverage.project.dao.objectDao.CoverageDOMapper">
+    <resultMap id="BaseResultMap" type="www.pactera.com.coverage.project.dao.objectDo.CoverageDO">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="serial_id" jdbcType="VARCHAR" property="serialId"/>
+        <result column="server_name" jdbcType="VARCHAR" property="serverName"/>
+        <result column="version_number" jdbcType="VARCHAR" property="versionNumber"/>
+        <result column="status" jdbcType="VARCHAR" property="status"/>
+        <result column="phase" jdbcType="VARCHAR" property="phase"/>
+        <result column="handle_user" jdbcType="VARCHAR" property="handleUser"/>
+        <result column="business_direction" jdbcType="VARCHAR" property="businessDirection"/>
+        <result column="coverage_rate" jdbcType="VARCHAR" property="coverageRate"/>
+        <result column="total_Line" jdbcType="VARCHAR" property="totalLine"/>
+        <result column="report_url" jdbcType="VARCHAR" property="reportUrl"/>
+        <result column="generate_time" jdbcType="TIMESTAMP" property="generateTime"/>
+        <result column="is_delete" jdbcType="VARCHAR" property="isDelete"/>
+    </resultMap>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+        delete from coverage_result_serial_number
+        where id = #{id,jdbcType=INTEGER}
+    </delete>
+    <insert id="insert" parameterType="www.pactera.com.coverage.project.dao.objectDo.CoverageDO">
+        insert into coverage_result_serial_number(id, serial_id, `server_name`,
+        version_number, `status`, phase,handle_user, business_direction,
+        coverage_rate, total_Line, report_url,
+        generate_time, is_delete)
+        values (#{id,jdbcType=INTEGER}, #{serialId,jdbcType=VARCHAR}, #{serverName,jdbcType=VARCHAR},
+        #{versionNumber,jdbcType=VARCHAR}, #{status,jdbcType=VARCHAR}, #{phase,jdbcType=VARCHAR},
+        #{handleUser,jdbcType=VARCHAR}, #{businessDirection,jdbcType=VARCHAR},
+        #{coverageRate,jdbcType=VARCHAR}, #{totalLine,jdbcType=VARCHAR}, #{reportUrl,jdbcType=VARCHAR},
+        #{generateTime,jdbcType=TIMESTAMP}, #{isDelete,jdbcType=VARCHAR})
+    </insert>
+    <update id="updateByPrimaryKey" parameterType="www.pactera.com.coverage.project.dao.objectDo.CoverageDO">
+        update coverage_result_serial_number
+        set serial_id = #{serialId,jdbcType=VARCHAR},
+        `server_name` = #{serverName,jdbcType=VARCHAR},
+        version_number = #{versionNumber,jdbcType=VARCHAR},
+        `status` = #{status,jdbcType=VARCHAR},
+        `phase` = #{phase,jdbcType=VARCHAR},
+        handle_user = #{handleUser,jdbcType=VARCHAR},
+        business_direction = #{businessDirection,jdbcType=VARCHAR},
+        coverage_rate = #{coverageRate,jdbcType=VARCHAR},
+        total_Line = #{totalLine,jdbcType=VARCHAR},
+        report_url = #{reportUrl,jdbcType=VARCHAR},
+        generate_time = #{generateTime,jdbcType=TIMESTAMP},
+        is_delete = #{isDelete,jdbcType=VARCHAR}
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+
+    <update id="updateByCondition" parameterType="www.pactera.com.coverage.project.dao.objectDo.CoverageDO">
+        update coverage_result_serial_number set
+        <if test="coverageDO2.coverageRate != '' and coverageDO2.coverageRate != null">
+            coverage_rate = #{coverageDO2.coverageRate,jdbcType=VARCHAR},
+        </if>
+        <if test="coverageDO2.totalLine != '' and coverageDO2.totalLine != null">
+            total_Line = #{coverageDO2.totalLine,jdbcType=VARCHAR},
+        </if>
+        <if test="coverageDO2.reportUrl != '' and coverageDO2.reportUrl = null">
+            report_url = #{coverageDO2.reportUrl,jdbcType=VARCHAR},
+        </if>
+        generate_time = NOW()
+        where serial_id = #{coverageDO2.serialId,jdbcType=VARCHAR};
+    </update>
+
+
+    <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        select id, serial_id, `server_name`, version_number, `status`, phase,`start_time`,`end_time`, handle_user,
+        business_direction, coverage_rate, total_Line, report_url, generate_time, is_delete
+        from coverage_result_serial_number
+        where id = #{id,jdbcType=INTEGER}
+    </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+        select * from coverage_result_serial_number
+    </select>
+
+    <select id="selectByCondition" parameterType="www.pactera.com.coverage.project.dao.objectDo.CoverageDO"
+            resultMap="BaseResultMap">
+        select * from coverage_result_serial_number where 1=1
+        <if test="coverageDO.serverName !='' and null != coverageDO.serverName">
+            and server_name = #{coverageDO.serverName,jdbcType=VARCHAR}
+        </if>
+        <if test="coverageDO.versionNumber !='' and null != coverageDO.versionNumber">
+            and version_number = #{coverageDO.versionNumber,jdbcType=VARCHAR}
+        </if>
+        <if test="coverageDO.status !='' and null != coverageDO.status">
+            and status = #{coverageDO.status,jdbcType=VARCHAR}
+        </if>
+        <if test="coverageDO.phase !='' and null != coverageDO.phase">
+            and phase = #{coverageDO.phase,jdbcType=VARCHAR}
+        </if>
+        <if test="coverageDO.handleUser !='' and null != coverageDO.handleUser">
+            and handle_user = #{coverageDO.handleUser,jdbcType=VARCHAR};
+        </if>
+    </select>
+
+
+</mapper>
