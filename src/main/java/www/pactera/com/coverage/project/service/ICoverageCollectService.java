@@ -8,7 +8,7 @@ public interface ICoverageCollectService {
 
     ResponseData<CollectCoverageRespDTO> coverageCollect(CollectCoverageReqDTO reqDTO, String token);
 
-    ResponseData<MergeCoverageRespDTO> coverageMerge(MergeCoverageReqDTO reqDTO);
+    ResponseData<MergeCoverageRespDTO> coverageMerge(MergeCoverageReqDTO reqDTO,String token);
 
     ResponseData<QueryCoverageRespDTO> coverageQuery(QueryCollectCoverageReqDTO reqDTO);
 

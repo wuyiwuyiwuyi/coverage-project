@@ -17,7 +17,11 @@ public enum SystemMessageEnum {
     PARAMETER_LACK_QUERY_COVERAGE("00012","查询覆盖率缺少必要参数"),
     ANALYSIS_FILE_EXCEPTION("00013","文件解析时异常"),
     SOURCES_FILE_NOT_FIND("00014","项目源文件未发现"),
-    PORT_RELEVANCE_NOT_FIND("00015","收集项目暂不持支覆盖率收集");
+    PORT_RELEVANCE_NOT_FIND("00015","收集项目暂不持支覆盖率收集"),
+    DATA_READER_EXCEPTION("00016","覆盖率数据读取失败"),
+    NOT_SAME_PROJECT_NAME("00017","不同项目无法进行合并"),
+    ONT_GREATER_PROJECT("00018","合并版本至少为两个以上才能合并");
+
 
 
     private String code;

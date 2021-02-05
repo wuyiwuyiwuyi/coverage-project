@@ -35,8 +35,10 @@ public class CoverageCollectController implements ICoverageCollectShare {
 
     @Override
     public ResponseData<MergeCoverageRespDTO> CoverageMerge(@Valid MergeCoverageReqDTO reqDTO) {
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+        String token = request.getHeader("Authorization");
         //log.error("合并项目覆盖率请求开始：req={}",reqDTO);
-        ResponseData<MergeCoverageRespDTO> resp = coverageCollectService.coverageMerge(reqDTO);
+        ResponseData<MergeCoverageRespDTO> resp = coverageCollectService.coverageMerge(reqDTO,token);
         //log.error("合并项目覆盖率结果返回：resp={}",resp);
         return resp;
     }

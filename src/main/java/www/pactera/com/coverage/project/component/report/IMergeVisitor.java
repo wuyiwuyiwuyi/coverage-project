@@ -11,7 +11,7 @@ import java.util.List;
 public interface IMergeVisitor extends IReportGroupVisitor{
 
     void visitInfo(List<SessionInfo> sessionInfos,
-                   Collection<ExecutionData> executionData,String project,String versionNumber) throws IOException;
+                   Collection<ExecutionData> executionData,String project,String versionNumber,String username) throws IOException;
 
     void visitEnd() throws IOException;
 

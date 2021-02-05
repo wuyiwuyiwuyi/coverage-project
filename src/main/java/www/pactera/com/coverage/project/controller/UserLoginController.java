@@ -27,6 +27,7 @@ public class UserLoginController implements IUserLoginShare {
 
     @Override
     public ResponseData<UserRegisterRespDTO> register(@Valid UserRegisterReqDTO req) {
+        System.out.println("register");
         return userLoginService.register(req);
     }
 }

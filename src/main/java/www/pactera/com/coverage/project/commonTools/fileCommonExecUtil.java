@@ -62,11 +62,11 @@ public class fileCommonExecUtil {
         }
     }
 
-    public static String JointPath(String basePath, String project, String version) {
+    public static String JointPath(String basePath, String project, String version,String separator_flag) {
         StringBuffer stringBuffer = new StringBuffer(basePath);
-        stringBuffer.append("\\");
+        stringBuffer.append(separator_flag);
         stringBuffer.append(project);
-        stringBuffer.append("\\");
+        stringBuffer.append(separator_flag);
         stringBuffer.append(version);
         stringBuffer.toString();
         String str = String.valueOf(stringBuffer);

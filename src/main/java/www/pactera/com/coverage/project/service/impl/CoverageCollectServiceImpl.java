@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import www.pactera.com.coverage.project.AccessControl.JwtUtils;
 import www.pactera.com.coverage.project.common.BaseEntity.Data;
 import www.pactera.com.coverage.project.common.BaseEntity.ResponseData;
-import www.pactera.com.coverage.project.common.BaseEntity.SourceTree;
 import www.pactera.com.coverage.project.common.Dto.*;
 import www.pactera.com.coverage.project.common.systemEmun.SystemMessageEnum;
 import www.pactera.com.coverage.project.commonTools.StringUtils;
@@ -52,9 +51,11 @@ public class CoverageCollectServiceImpl implements ICoverageCollectService {
     @Value("${create.coverage.filePath}")
     private String exec_file_path;
 
-    private String base_file = "\\"+"coverage.exec";
+    private final static String separator_flag = "\\";
 
-    private String merge_base_file = "\\"+"merge.exec";
+    private String base_file = separator_flag+"coverage.exec";
+
+    private String merge_base_file = separator_flag+"merge.exec";
 
     @Autowired
     private CoverageInfoDoMapper coverageInfoDoMapper;
@@ -85,16 +86,16 @@ public class CoverageCollectServiceImpl implements ICoverageCollectService {
             return new ResponseData<>(SystemMessageEnum.PARAMETER_LACK.getCode(),SystemMessageEnum.PARAMETER_LACK.getMsg(),new CollectCoverageRespDTO(false));
         }
         //根据服务名称+版本号生成此次收据的文件夹
-        String basePath = fileCommonExecUtil.JointPath(exec_file_path,serverName,serverVersion);
+        String basePath = fileCommonExecUtil.JointPath(exec_file_path,serverName,serverVersion,separator_flag);
         fileCommonExecUtil.createFile(basePath);
-        String baseSourcePath = fileCommonExecUtil.JointPath(exec_file_path,"source",serverName);
+        String baseSourcePath = fileCommonExecUtil.JointPath(exec_file_path,"source",serverName,separator_flag);
         File sourceFile =  new File(baseSourcePath);
         if(!sourceFile.exists()){
             return new ResponseData<>(SystemMessageEnum.SOURCES_FILE_NOT_FIND.getCode(),SystemMessageEnum.SOURCES_FILE_NOT_FIND.getMsg(),new CollectCoverageRespDTO(false));
         }
         try {
             //复制保存项目源码
-            fileCommonExecUtil.copyFolder(baseSourcePath,basePath+"\\source");
+            fileCommonExecUtil.copyFolder(baseSourcePath,basePath+separator_flag+"source");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -115,7 +116,7 @@ public class CoverageCollectServiceImpl implements ICoverageCollectService {
             reader.setExecutionDataVisitor(localWriter);
             writer.visitDumpCommand(true,false);
             if (!reader.read()) {
-                throw new IOException("Socket closed unexpectedly.");
+                return new ResponseData<>(SystemMessageEnum.DATA_READER_EXCEPTION.getCode(),SystemMessageEnum.DATA_READER_EXCEPTION.getMsg(),new CollectCoverageRespDTO(false));
             }
             socket.close();
             localFile.close();
@@ -137,46 +138,37 @@ public class CoverageCollectServiceImpl implements ICoverageCollectService {
                     execFileLoader.getExecutionDataStore().getContents(),reqDTO,username);
             reportVisitor.visitBundle(bundleCoverage,
                     new DirectorySourceFileLocator(targetFile.getSourceDirectory(), "utf-8", 4));
+            coverageInfoDoMapper.updateStatus(reqDTO.getProjectName(),reqDTO.getVersionNumber(),username,"成功");
         } catch (IOException e) {
-            e.printStackTrace();
+            coverageInfoDoMapper.updateStatus(reqDTO.getProjectName(),reqDTO.getVersionNumber(),username,"失败");
+            return new ResponseData<>(SystemMessageEnum.EXCEPTION.getCode(), SystemMessageEnum.EXCEPTION.getMsg(), new CollectCoverageRespDTO(false));
         }
         CollectCoverageRespDTO co = new CollectCoverageRespDTO();
         co.setResult(true);
         return new ResponseData<>(SystemMessageEnum.SUCCESS.getCode(), SystemMessageEnum.SUCCESS.getMsg(), co);
     }
 
-    @Async
-    public void reportVisitor(IBundleCoverage bundleCoverage,TargetFile targetFile,ExecFileLoader execFileLoader,CollectCoverageReqDTO reqDTO,String username){
-       /* try {
-
-            coverageInfoDoMapper.updateStatus(reqDTO.getProjectName(),reqDTO.getVersionNumber(),username,"成功");
-        } catch (IOException e) {
-            coverageInfoDoMapper.updateStatus(reqDTO.getProjectName(),reqDTO.getVersionNumber(),username,"失败");
-        }*/
-    }
-
 
     @Override
-    public ResponseData<MergeCoverageRespDTO> coverageMerge(MergeCoverageReqDTO reqDTO) {
-
+    public ResponseData<MergeCoverageRespDTO> coverageMerge(MergeCoverageReqDTO reqDTO,String token) {
+        String username = JwtUtils.getUsernameFromToken(token);
         //对请求合并的版本进行校验   1：对是否为同一个用户进行校验   2：对版本号是否为同一迭代里面的大版本进行校验（主要保证合并的是否所属的各版本）
         List<ProjectBaseInfo> reqList = reqDTO.getMergeServerInfo();
-        Map<String,List<ProjectBaseInfo>> handleUserMap = reqList.stream().collect(Collectors.groupingBy(ProjectBaseInfo::getOperator));
+        //Map<String,List<ProjectBaseInfo>> handleUserMap = reqList.stream().collect(Collectors.groupingBy(ProjectBaseInfo::getOperator));
         Map<String,List<ProjectBaseInfo>> projectNameMap = reqList.stream().collect(Collectors.groupingBy(ProjectBaseInfo::getProjectName));
-        if(handleUserMap.entrySet().size()>1 || projectNameMap.entrySet().size()>1){
-            return null;
+        if(projectNameMap.entrySet().size()>1){
+            return new ResponseData<>(SystemMessageEnum.NOT_SAME_PROJECT_NAME.getCode(),SystemMessageEnum.NOT_SAME_PROJECT_NAME.getMsg(), new MergeCoverageRespDTO(false));
         }
-        String username = reqList.get(0).getOperator();
         //2: 校验版本号
         ExecFileLoader loader = new ExecFileLoader();
         List<File> execFiles = new ArrayList<File>();
         //合并
         for(ProjectBaseInfo projectBaseInfo : reqList){
-            String basePath = fileCommonExecUtil.JointPath(exec_file_path,projectBaseInfo.getProjectName(),projectBaseInfo.getVersionNumber());
+            String basePath = fileCommonExecUtil.JointPath(exec_file_path,projectBaseInfo.getProjectName(),projectBaseInfo.getVersionNumber(),separator_flag);
             execFiles.add(new File(basePath+base_file));
         }
         if(execFiles.isEmpty() || execFiles.size()<2){
-            return  null;
+            return new ResponseData<>(SystemMessageEnum.ONT_GREATER_PROJECT.getCode(),SystemMessageEnum.ONT_GREATER_PROJECT.getMsg(), new MergeCoverageRespDTO(false));
         }
         String mergeVersion = "";
         String baseMergePath = "";
@@ -196,7 +188,7 @@ public class CoverageCollectServiceImpl implements ICoverageCollectService {
                     mergeVersion += projectNameList.get(i);
                 }
             }
-            baseMergePath = fileCommonExecUtil.JointPath(exec_file_path,reqList.get(0).getProjectName(),mergeVersion+"-merge");
+            baseMergePath = fileCommonExecUtil.JointPath(exec_file_path,reqList.get(0).getProjectName(),mergeVersion,separator_flag);
             fileCommonExecUtil.createFile(baseMergePath);
             File destFile = new File(baseMergePath+merge_base_file);
             loader.save(destFile, true);
@@ -208,8 +200,8 @@ public class CoverageCollectServiceImpl implements ICoverageCollectService {
             return new ResponseData<>(SystemMessageEnum.ANALYSIS_FILE_EXCEPTION.getCode(),SystemMessageEnum.ANALYSIS_FILE_EXCEPTION.getMsg(),new MergeCoverageRespDTO(false) );
         }
         try {
-            String baseSourcePath = fileCommonExecUtil.JointPath(exec_file_path,reqList.get(0).getProjectName(),reqList.get(0).getVersionNumber());
-            fileCommonExecUtil.copyFolder(baseSourcePath+"\\source",baseMergePath+"\\source");
+            String baseSourcePath = fileCommonExecUtil.JointPath(exec_file_path,reqList.get(0).getProjectName(),reqList.get(0).getVersionNumber(),separator_flag);
+            fileCommonExecUtil.copyFolder(baseSourcePath+separator_flag+"source",baseMergePath+separator_flag+"source");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -225,15 +217,16 @@ public class CoverageCollectServiceImpl implements ICoverageCollectService {
 
             //String versionNumber = "merge-"+reqList.get(0).getVersionNum().substring(0,reqList.get(0).getVersionNum().indexOf("."))+"."+(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
             recordMergeCoverageInfo(reqList.get(0).getProjectName(),mergeVersion,bundleCoverage,username);
+            recordSourceMergeInfo(coverageBuilder,mergeVersion,reqList.get(0).getProjectName(),username);
             mergeVisitor.visitInfo(execFileLoader.getSessionInfoStore().getInfos(),execFileLoader.getExecutionDataStore().getContents(),
-                    reqList.get(0).getProjectName(),mergeVersion);
+                    reqList.get(0).getProjectName(),mergeVersion,username);
             mergeVisitor.visitBundle(bundleCoverage,
                     new DirectorySourceFileLocator(targetFile.getSourceDirectory(), "utf-8", 4));
+            coverageInfoDoMapper.updateStatus(reqList.get(0).getProjectName(),mergeVersion,username,"成功");
         } catch (IOException e) {
-            e.printStackTrace();
+            coverageInfoDoMapper.updateStatus(reqList.get(0).getProjectName(),mergeVersion,username,"失败");
+            return new ResponseData<>(SystemMessageEnum.EXCEPTION.getCode(), SystemMessageEnum.EXCEPTION.getMsg(), new MergeCoverageRespDTO(false));
         }
-
-
         return new ResponseData<>(SystemMessageEnum.SUCCESS.getCode(),SystemMessageEnum.SUCCESS.getMsg(), new MergeCoverageRespDTO(true));
     }
 
@@ -297,8 +290,21 @@ public class CoverageCollectServiceImpl implements ICoverageCollectService {
                 || StringUtils.isEmpty(operator)){
             return new ResponseData<>(SystemMessageEnum.PARAMETER_LACK_QUERY_COVERAGE.getCode(),SystemMessageEnum.PARAMETER_LACK_QUERY_COVERAGE.getMsg(), null);
         }
+        List<SourcePathInfoDO> sourcePathInfoDOList = sourcePathInfoDOMapper.selectProjectFile(projectName,versionNumber,operator);
+        Map<String,Data> dataMap = new HashMap<>();
+        for (SourcePathInfoDO sourcePathInfoDO: sourcePathInfoDOList) {
+            String packagePath = sourcePathInfoDO.getPackagePath();
+            String fileName = packagePath.substring(packagePath.lastIndexOf("/")+1,packagePath.length());
+            Data data = new Data();
+            data.setCoverageLine(sourcePathInfoDO.getCoverLine());
+            data.setMissLine(sourcePathInfoDO.getMissLine());
+            data.setTotalLine(sourcePathInfoDO.getTotalLineNumber());
+            String sourceCoverageRate = "0".equals(sourcePathInfoDO.getCoverLine())?"0%":sourcePathInfoDO.getSourceCoverageRate();
+            data.setCoverageRate(sourceCoverageRate);
+            dataMap.put(fileName,data);
+        }
         CoverageInfoDO coverageInfoDO =coverageInfoDoMapper.selectProjectCoverage(projectName,versionNumber,operator);
-       ProjectCoverageRespDTO projectCoverageRespDTO = ProjectCoverageRespDTO.builder()
+        ProjectCoverageRespDTO projectCoverageRespDTO = ProjectCoverageRespDTO.builder()
                .projectName(coverageInfoDO.getProjectName())
                .versionNumber(coverageInfoDO.getVersionNumber())
                .operator(coverageInfoDO.getOperator())
@@ -309,7 +315,8 @@ public class CoverageCollectServiceImpl implements ICoverageCollectService {
                .totalLine(coverageInfoDO.getTotalLine())
                .coverageLine(coverageInfoDO.getCoverageLine())
                .coverageRate(coverageInfoDO.getCoverageRate())
-               .data(buildProjectStructure2(projectCoverageReqDTO))
+               .data(buildProjectStructure2(sourcePathInfoDOList))
+               .coverageMap(dataMap)
                .build();
         return new ResponseData<>(SystemMessageEnum.SUCCESS.getCode(), SystemMessageEnum.SUCCESS.getMsg(), projectCoverageRespDTO);
     }
@@ -329,6 +336,9 @@ public class CoverageCollectServiceImpl implements ICoverageCollectService {
         String packageName  = sourcePathInfoDOMapper.selectPackageName(projectName,versionName,operator,sourceName);
         String sourcePath = packageName.substring(0,packageName.lastIndexOf("/"));
         SourceClassCoverageDO classCoverageDO = sourceClassCoverageDOMapper.selectSourceClassCoverage(projectName,versionName,operator,sourcePath,sourceName);
+        if(null == classCoverageDO){
+            return new ResponseData<>(SystemMessageEnum.SUCCESS.getCode(), SystemMessageEnum.SUCCESS.getMsg(),new SourceCoverageRespDTO());
+        }
         SourceCoverageRespDTO sourceCoverageRespDTO = SourceCoverageRespDTO.builder()
                 .projectName(classCoverageDO.getProjectName())
                 .versionNumber(classCoverageDO.getVersionNumber())
@@ -355,9 +365,9 @@ public class CoverageCollectServiceImpl implements ICoverageCollectService {
         String sourcePackageName  = sourcePathInfoDOMapper.selectPackageName(projectName,versionName,operator,sourceName);
         String sourceFilePath = sourcePackageName.substring(0,sourcePackageName.lastIndexOf("/"));
         String packageName  = sourceFilePath;
-        String basePath = fileCommonExecUtil.JointPath(exec_file_path,projectName,versionName);
-        String packagePath = packageName.replace("/","\\");
-        String sourcePath = basePath+"\\"+"source"+"\\"+"src"+"\\"+packagePath+"\\"+sourceName;
+        String basePath = fileCommonExecUtil.JointPath(exec_file_path,projectName,versionName,separator_flag);
+        String packagePath = packageName.replace("/",separator_flag);
+        String sourcePath = basePath+separator_flag+"source"+separator_flag+"src"+separator_flag+packagePath+separator_flag+sourceName;
         List<String> list = new ArrayList<>();
         File file = new File(sourcePath);
         FileReader fileReader = null;
@@ -383,6 +393,11 @@ public class CoverageCollectServiceImpl implements ICoverageCollectService {
         return new ResponseData<>(SystemMessageEnum.SUCCESS.getCode(),SystemMessageEnum.SUCCESS.getMsg(),sourcesGainDTO);
 
     }
+
+    public void updateRecordCoverageStatus(CollectCoverageReqDTO reqDTO,String username){
+
+    }
+
 
     @Async
     public void recordCoverageInfo(CollectCoverageReqDTO reqDTO,IBundleCoverage bundleCoverage,String username){
@@ -430,6 +445,30 @@ public class CoverageCollectServiceImpl implements ICoverageCollectService {
         }
     }
 
+    public void recordSourceMergeInfo(CoverageBuilder coverageBuilder,String version,String project,String username){
+        Collection<ISourceFileCoverage> collections = coverageBuilder.getSourceFiles();
+        List<SourcePathInfoDO> sourcePathInfoDOList = sourcePathInfoDOMapper.selectProjectFile(project,version,username);
+        if(sourcePathInfoDOList == null || sourcePathInfoDOList.isEmpty()){
+            for(ISourceFileCoverage sourceFileCoverage : collections){
+                SourcePathInfoDO sourcePathInfoDO = new SourcePathInfoDO();
+                sourcePathInfoDO.setProjectName(project);
+                sourcePathInfoDO.setVersionNumber(version);
+                sourcePathInfoDO.setPackagePath(sourceFileCoverage.getPackageName()+"/"+sourceFileCoverage.getName());
+                sourcePathInfoDO.setCoverLine(String.valueOf(sourceFileCoverage.getLineCounter().getCoveredCount()));
+                sourcePathInfoDO.setMissLine(String.valueOf(sourceFileCoverage.getLineCounter().getMissedCount()));
+                sourcePathInfoDO.setTotalLineNumber(String.valueOf(sourceFileCoverage.getLineCounter().getTotalCount()));
+                sourcePathInfoDO.setSourceCoverageRate(StringUtils.coverConversion(sourceFileCoverage.getLineCounter().getCoveredCount(),sourceFileCoverage.getLineCounter().getTotalCount()));
+                sourcePathInfoDO.setOperator(username);
+                sourcePathInfoDO.setOperationTime(new Date());
+                sourcePathInfoDO.setIsDelete("N");
+                sourcePathInfoDOMapper.insert(sourcePathInfoDO);
+            }
+        }
+
+
+    }
+
+
     public void recordSourceInfo(CoverageBuilder coverageBuilder,CollectCoverageReqDTO reqDTO,String username){
         String projectName =  reqDTO.getProjectName();
         String versionNumber = reqDTO.getVersionNumber();
@@ -454,8 +493,9 @@ public class CoverageCollectServiceImpl implements ICoverageCollectService {
     }
 
 
-    public Data buildProjectStructure(ProjectCoverageReqDTO projectCoverageReqDTO){
-        String projectName = projectCoverageReqDTO.getProjectName();
+    /*public Data buildProjectStructure(ProjectCoverageReqDTO projectCoverageReqDTO){
+        return null;
+        *//*String projectName = projectCoverageReqDTO.getProjectName();
         String versionNumber = projectCoverageReqDTO.getVersionNumber();
         String operator = projectCoverageReqDTO.getOperator();
         List<SourcePathInfoDO> sourcePathInfoDOList = sourcePathInfoDOMapper.selectProjectFile(projectName,versionNumber,operator);
@@ -486,18 +526,18 @@ public class CoverageCollectServiceImpl implements ICoverageCollectService {
         }
         data.setData(source);
         //buildProjectStructure2(data);
-        return data;
-    }
+        return data;*//*
+    }*/
 
 
-    public String buildProjectStructure2(ProjectCoverageReqDTO projectCoverageReqDTO){
-        String projectName = projectCoverageReqDTO.getProjectName();
+    public String buildProjectStructure2(List<SourcePathInfoDO> sourcePathInfoDOList){
+     /*   String projectName = projectCoverageReqDTO.getProjectName();
         String versionNumber = projectCoverageReqDTO.getVersionNumber();
         String operator = projectCoverageReqDTO.getOperator();
         List<SourcePathInfoDO> sourcePathInfoDOList = sourcePathInfoDOMapper.selectProjectFile(projectName,versionNumber,operator);
         if(sourcePathInfoDOList.isEmpty() || sourcePathInfoDOList.size() ==0){
             return "";
-        }
+        }*/
 
         List<Map<String, String>> list=new ArrayList<Map<String,String>>();
         Map<String, String> item=new HashMap<String, String>();
@@ -540,17 +580,25 @@ public class CoverageCollectServiceImpl implements ICoverageCollectService {
     }
     public void seracherItem(JsonObject jsonObject,List<Map<String, String>> list){
         JsonArray jsonArray=new JsonArray();
-        jsonObject.add("children",jsonArray);
-        for(Map<String, String> itemT:list){
-            if(jsonObject.get("label").getAsString().equals(itemT.get("parentId"))){
-                //System.out.println(jsonObject.get("label").getAsString()+"  "+itemT.get("parentId"));
-                JsonObject jsonObjectT=new JsonObject();
-                jsonObjectT.addProperty("label", itemT.get("label"));
-                jsonArray.add(jsonObjectT);
-                seracherItem(jsonObjectT,list);
-            }
+        try{
+            jsonObject.add("children",jsonArray);
+            for(Map<String, String> itemT:list){
+                if(jsonObject.get("label").getAsString().equals(itemT.get("parentId"))){
+                    //System.out.println(jsonObject.get("label").getAsString()+"  "+itemT.get("parentId"));
+                    JsonObject jsonObjectT=new JsonObject();
+                    String labelValue  = null == itemT?"":itemT.get("label");
+                    jsonObjectT.addProperty("label", labelValue);
+                    jsonArray.add(jsonObjectT);
+                    seracherItem(jsonObjectT,list);
+                }
 
+            }
+        }catch (Exception e){
+            System.out.println(jsonObject);
+            throw new NullPointerException();
         }
+
+
     }
 
 

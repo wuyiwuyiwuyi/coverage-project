@@ -2,6 +2,9 @@ package www.pactera.com.coverage.project.common.Dto;
 
 import lombok.*;
 import www.pactera.com.coverage.project.common.BaseEntity.BaseDTO;
+import www.pactera.com.coverage.project.common.BaseEntity.Data;
+
+import java.util.Map;
 
 
 @Builder
@@ -30,6 +33,8 @@ public class ProjectCoverageRespDTO extends BaseDTO {
     private String operator;
 
     private String operationTime;
+
+    private Map<String, Data> coverageMap;
 
     private String data;
 

@@ -31,15 +31,18 @@ public class MergeVisitorImpl implements IMergeVisitor{
 
     private String versionNumber;
 
+    private String username;
+
     @Autowired
     private SourceClassCoverageDOMapper sourceClassCoverageDOMapper;
 
     @Override
-    public void visitInfo(List<SessionInfo> sessionInfos, Collection<ExecutionData> executionData, String projectName, String versionNumber) throws IOException {
+    public void visitInfo(List<SessionInfo> sessionInfos, Collection<ExecutionData> executionData, String projectName, String versionNumber,String username) throws IOException {
         this.sessionInfos = sessionInfos;
         this.executionData = executionData;
         this.projectName = projectName;
         this.versionNumber = versionNumber;
+        this.username = username;
     }
 
     @Override
@@ -67,7 +70,7 @@ public class MergeVisitorImpl implements IMergeVisitor{
                     SourceClassCoverageDO sourceDO = new SourceClassCoverageDO();
                     sourceDO.setProjectName(projectName);
                     sourceDO.setVersionNumber(versionNumber);
-                    sourceDO.setOperator("wu_yi");
+                    sourceDO.setOperator(username);
                     sourceDO.setOperationTime(new Date());
                     sourceDO.setSourceName(sourceFileName);
                     sourceDO.setPackageName(packageName);
