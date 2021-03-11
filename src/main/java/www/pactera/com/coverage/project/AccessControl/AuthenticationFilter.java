@@ -80,20 +80,20 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
                                             FilterChain chain,
                                             Authentication auth) throws IOException, ServletException {
         SecurityUser jwtUser = (SecurityUser) auth.getPrincipal();
-        Enumeration<String> str  = request.getHeaderNames();
-
+        String role = jwtUser.getRole();
+        int num = jwtUser.getTask();
         String token  = JwtUtils.createToken(jwtUser.getUsername());
         response.setHeader("Authorization","Bearer "+token);
         response.setContentType(CONTENT_TYPE);
         response.setCharacterEncoding(CHARACTER_ENCODING);
-        ResponseData<UserLoginRespDTO> responseDs = new ResponseData<>(SystemMessageEnum.LOGIN_SUCCESS.getCode(),SystemMessageEnum.LOGIN_SUCCESS.getMsg(),new UserLoginRespDTO(true));
+        ResponseData<UserLoginRespDTO> responseDs = new ResponseData<>(SystemMessageEnum.LOGIN_SUCCESS.getCode(),SystemMessageEnum.LOGIN_SUCCESS.getMsg(),new UserLoginRespDTO(true,role,num));
         String responseData = JSON.toJSONString(responseDs);
         response.getWriter().write(responseData);
     }
 
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException{
-        ResponseData<UserLoginRespDTO> responseDs = new ResponseData<>(SystemMessageEnum.LOGIN_FAILURE.getCode(),SystemMessageEnum.LOGIN_FAILURE.getMsg(),new UserLoginRespDTO(false));
+        ResponseData<UserLoginRespDTO> responseDs = new ResponseData<>(SystemMessageEnum.LOGIN_FAILURE.getCode(),SystemMessageEnum.LOGIN_FAILURE.getMsg(),new UserLoginRespDTO(false,"",0));
         String responseData = JSON.toJSONString(responseDs);
         response.setContentType(CONTENT_TYPE);
         response.setCharacterEncoding(CHARACTER_ENCODING);

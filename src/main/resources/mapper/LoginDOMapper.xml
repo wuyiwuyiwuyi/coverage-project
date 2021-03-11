@@ -5,17 +5,23 @@
         <id column="id" jdbcType="INTEGER" property="id"/>
         <result column="username" jdbcType="VARCHAR" property="username"/>
         <result column="password" jdbcType="VARCHAR" property="password"/>
+        <result column="role" jdbcType="VARCHAR" property="role"/>
         <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="is_delete" jdbcType="VARCHAR" property="isDelete"/>
     </resultMap>
 
     <insert id="insert" parameterType="www.pactera.com.coverage.project.dao.objectDo.LoginDO">
-        insert into user_login(id, username, `password`,create_time)
+        insert into user_login(id, username, password,`role`, create_time,is_delete)
         values (#{LoginDO.id,jdbcType=INTEGER}, #{LoginDO.username,jdbcType=VARCHAR}, #{LoginDO.password,jdbcType=VARCHAR},
-        #{LoginDO.createTime,jdbcType=TIMESTAMP})
+        #{LoginDO.role,jdbcType=VARCHAR},#{LoginDO.createTime,jdbcType=TIMESTAMP},#{LoginDO.isDelete,jdbcType=VARCHAR})
     </insert>
 
     <select id="selectByUsername" resultMap="BaseResultMap">
-        select * from user_login where username = #{username,jdbcType=VARCHAR};
+        select * from user_login where username = #{username,jdbcType=VARCHAR} and is_delete = 'N';
     </select>
+
+    <delete id="deleteUser" parameterType="java.lang.String" >
+        update  user_login set is_delete = 'Y' where username = #{username,jdbcType=VARCHAR}
+    </delete>
 
 </mapper>

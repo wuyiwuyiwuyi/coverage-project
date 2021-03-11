@@ -3,7 +3,11 @@ server:
 
 create:
   coverage:
-    filePath: C:\Users\Administrator\Desktop\pactera-tools
+    filePath: /home/pactera2021/project-tools
+
+user:
+  white:
+    switch: N
 
 spring:
   application:
@@ -11,9 +15,9 @@ spring:
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/jacoco_pactera?serverTimezone=GMT%2B8
+    url: jdbc:mysql://172.18.11.17:3306/pactera2021?serverTimezone=GMT%2B8
     username: root
-    password: wuyi
+    password: root@2020
 
 mybatis:
   mapper-locations: classpath*:mapper/*.xml

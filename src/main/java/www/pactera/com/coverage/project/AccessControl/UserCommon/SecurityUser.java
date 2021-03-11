@@ -13,6 +13,8 @@ public class SecurityUser implements UserDetails {
     private Integer id;
     private String username;
     private String password;
+    private String role;
+    private int task;
     private Collection<? extends GrantedAuthority> authorities;
 
     public SecurityUser() {
@@ -23,6 +25,8 @@ public class SecurityUser implements UserDetails {
         id = user.getId();
         username = user.getUsername();
         password = user.getPassword();
+        role = user.getRole();
+        task = user.getTask();
         authorities = Collections.singleton(new SimpleGrantedAuthority(user.getRole()));
     }
 
@@ -40,6 +44,14 @@ public class SecurityUser implements UserDetails {
     @Override
     public String getUsername() {
         return username;
+    }
+
+    public String getRole(){
+        return role;
+    }
+
+    public int getTask(){
+        return task;
     }
 
     // 账号是否未过期，默认是false，记得要改一下

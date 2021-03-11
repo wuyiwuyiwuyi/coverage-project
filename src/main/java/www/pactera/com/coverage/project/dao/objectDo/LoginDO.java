@@ -11,7 +11,11 @@ public class LoginDO implements Serializable {
 
     private String password;
 
+    private String role;
+
     private Date createTime;
+
+    private String isDelete;
 
     public Integer getId() {
         return id;
@@ -37,6 +41,14 @@ public class LoginDO implements Serializable {
         this.password = password;
     }
 
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
     public Date getCreateTime() {
         return createTime;
     }
@@ -45,15 +57,12 @@ public class LoginDO implements Serializable {
         this.createTime = createTime;
     }
 
-    public LoginDO(Integer id, String username, String password, Date createTime) {
-        this.id = id;
-        this.username = username;
-        this.password = password;
-        this.createTime = createTime;
+    public String getIsDelete() {
+        return isDelete;
     }
 
-    public LoginDO() {
-
+    public void setIsDelete(String isDelete) {
+        this.isDelete = isDelete;
     }
 
     @Override
@@ -62,7 +71,13 @@ public class LoginDO implements Serializable {
                 "id=" + id +
                 ", username='" + username + '\'' +
                 ", password='" + password + '\'' +
+                ", role='" + role + '\'' +
                 ", createTime=" + createTime +
+                ", isDelete='" + isDelete + '\'' +
                 '}';
+    }
+
+    public LoginDO() {
+
     }
 }

@@ -7,12 +7,14 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserLoginRespDTO {
+public class UserDeleteReqDTO {
 
-    private boolean result;
+    private String username;
+
+    private String password;
 
     private String role;
 
-    private int taskNumber;
+    private String status;
 
 }

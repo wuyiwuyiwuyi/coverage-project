@@ -20,8 +20,11 @@ public enum SystemMessageEnum {
     PORT_RELEVANCE_NOT_FIND("00015","收集项目暂不持支覆盖率收集"),
     DATA_READER_EXCEPTION("00016","覆盖率数据读取失败"),
     NOT_SAME_PROJECT_NAME("00017","不同项目无法进行合并"),
-    ONT_GREATER_PROJECT("00018","合并版本至少为两个以上才能合并");
+    ONT_GREATER_PROJECT("00018","合并版本至少为两个以上才能合并"),
+    ONT_USER_WHITE_LIST("00019","暂无注册权限，需先通过权限审批"),
+    NOT_DELETE_ADMIN_USER("00021","管理员用户无法删除")
 
+    ;
 
 
     private String code;

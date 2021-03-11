@@ -77,7 +77,7 @@ public class MergeVisitorImpl implements IMergeVisitor{
                     sourceDO.setCoverLineNumber(String.valueOf(coverLine));
                     sourceDO.setTotalLineNumber(String.valueOf(totalCount));
                     sourceDO.setSourceCoverageRate(StringUtils.coverConversion(coverLine,totalCount));
-                    Reader reader = locator.getSourceFile(packageName,sourceFileName);
+                    Reader reader = locator.getSourceFile("main/java/"+packageName,sourceFileName);
                     read(s,reader,sourceDO);
                 }
             }else {

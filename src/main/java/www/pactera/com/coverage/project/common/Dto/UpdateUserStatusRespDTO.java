@@ -1,18 +1,16 @@
 package www.pactera.com.coverage.project.common.Dto;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserLoginRespDTO {
+public class UpdateUserStatusRespDTO {
 
     private boolean result;
-
-    private String role;
-
-    private int taskNumber;
 
 }

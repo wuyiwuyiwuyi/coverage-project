@@ -10,4 +10,7 @@ public interface LoginDOMapper {
 
     LoginDO selectByUsername(@Param("username")String um);
 
+    void deleteUser(@Param("username") String username);
+
+
 }

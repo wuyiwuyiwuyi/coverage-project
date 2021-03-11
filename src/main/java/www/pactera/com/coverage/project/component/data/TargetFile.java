@@ -10,17 +10,17 @@ public class TargetFile {
     private File mergeDataFile;
 
 
-    public TargetFile(final File projectDirectory) {
+    public TargetFile(final File projectDirectory,String separator_flag) {
 
         this.executionDataFile = new File(projectDirectory, "coverage.exec");
-        this.classesDirectory = new File(projectDirectory, "\\source\\target\\classes");
-        this.sourceDirectory = new File(projectDirectory, "source\\src");
+        this.classesDirectory = new File(projectDirectory, separator_flag+"source"+separator_flag+"target"+separator_flag+"classes");
+        this.sourceDirectory = new File(projectDirectory, "source"+separator_flag+"src");
 
     }
 
-    public TargetFile(final File projectDirectory,String merge){
-        this.classesDirectory = new File(projectDirectory, "source\\target\\classes");
-        this.sourceDirectory = new File(projectDirectory, "source\\src");
+    public TargetFile(final File projectDirectory,String merge,String separator_flag){
+        this.classesDirectory = new File(projectDirectory, "source"+separator_flag+"target"+separator_flag+"classes");
+        this.sourceDirectory = new File(projectDirectory, "source"+separator_flag+"src");
         this.mergeDataFile = new File(projectDirectory, merge);
     }
 

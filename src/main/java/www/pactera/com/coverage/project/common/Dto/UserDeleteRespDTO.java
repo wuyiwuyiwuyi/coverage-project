@@ -5,14 +5,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-public class UserLoginRespDTO {
+@AllArgsConstructor
+public class UserDeleteRespDTO {
 
     private boolean result;
-
-    private String role;
-
-    private int taskNumber;
 
 }

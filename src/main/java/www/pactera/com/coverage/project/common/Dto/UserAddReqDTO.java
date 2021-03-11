@@ -1,28 +1,27 @@
 package www.pactera.com.coverage.project.common.Dto;
 
-import lombok.Data;
+import lombok.*;
 
-@Data
-public class UserDTO {
-
-    private int id;
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class UserAddReqDTO {
 
     /**
      * 用户名
      */
+    @NonNull
     private String username;
-
     /**
      * 密码
      */
+    @NonNull
     private String password;
     /**
      * 角色
      */
+    @NonNull
     private String role;
-    /**
-     * 代办任务数
-     */
-    private int task;
 
 }

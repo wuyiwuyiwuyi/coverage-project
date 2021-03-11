@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="www.pactera.com.coverage.project.dao.objectDao.UserWhiteListDOMapper">
+    <resultMap id="BaseResultMap" type="www.pactera.com.coverage.project.dao.objectDo.UserWhiteListDO">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="employee_id" jdbcType="VARCHAR" property="employeeId"/>
+        <result column="password" jdbcType="VARCHAR" property="password"/>
+        <result column="is_authorization" jdbcType="VARCHAR" property="isAuthorization"/>
+        <result column="authorization_data" jdbcType="TIMESTAMP" property="authorizationData"/>
+        <result column="role" jdbcType="VARCHAR" property="role"/>
+        <result column="is_delete" jdbcType="VARCHAR" property="isDelete"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="www.pactera.com.coverage.project.dao.objectDo.UserWhiteListDO">
+        insert into user_white_list(id,employee_id,password,is_authorization,authorization_data,`role`,is_delete)
+        values (#{userWhiteListDO.id,jdbcType=INTEGER}, #{userWhiteListDO.employeeId,jdbcType=VARCHAR},#{userWhiteListDO.password,jdbcType=VARCHAR}, #{userWhiteListDO.isAuthorization,jdbcType=VARCHAR},
+        #{userWhiteListDO.authorizationData,jdbcType=TIMESTAMP},#{userWhiteListDO.role,jdbcType=VARCHAR},#{userWhiteListDO.isDelete,jdbcType=VARCHAR})
+    </insert>
+
+    <select id="selectOne" resultMap="BaseResultMap">
+        select * from user_white_list where employee_id = #{employeeId,jdbcType=VARCHAR} and is_delete = 'N';
+    </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        select * from user_white_list where is_delete = 'N' order by authorization_data desc
+    </select>
+
+    <update id="updateStatus" parameterType="java.lang.String">
+        update user_white_list set is_authorization = #{status,jdbcType=VARCHAR} where employee_id = #{username,jdbcType=VARCHAR} and role = #{role,jdbcType=VARCHAR}
+    </update>
+
+    <select id="selectApprovalTask" resultMap="BaseResultMap" >
+        select * from user_white_list where is_authorization = '1' and is_delete = 'N';
+    </select>
+
+    <delete id="deleteUser" parameterType="java.lang.String" >
+        update user_white_list set is_delete = 'Y' where employee_id = #{employeeId,jdbcType=VARCHAR} and password = #{password,jdbcType=VARCHAR} and role = #{role,jdbcType=VARCHAR}
+    </delete>
+
+</mapper>

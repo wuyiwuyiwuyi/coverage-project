@@ -51,7 +51,7 @@ public class CoverageCollectServiceImpl implements ICoverageCollectService {
     @Value("${create.coverage.filePath}")
     private String exec_file_path;
 
-    private final static String separator_flag = "\\";
+    private final static String separator_flag = "/";
 
     private String base_file = separator_flag+"coverage.exec";
 
@@ -124,7 +124,7 @@ public class CoverageCollectServiceImpl implements ICoverageCollectService {
             e.printStackTrace();
             return new ResponseData<>(SystemMessageEnum.CONNECTION_EXCEPTION.getCode(),SystemMessageEnum.CONNECTION_EXCEPTION.getMsg(),new CollectCoverageRespDTO(false));
         }
-        TargetFile targetFile = new TargetFile(new File(basePath));
+        TargetFile targetFile = new TargetFile(new File(basePath),separator_flag);
         CoverageBuilder coverageBuilder = new CoverageBuilder();
         ExecFileLoader execFileLoader = new ExecFileLoader();
         try {
@@ -206,7 +206,7 @@ public class CoverageCollectServiceImpl implements ICoverageCollectService {
             e.printStackTrace();
         }
         //解析merge.exec文件
-        TargetFile targetFile = new TargetFile(new File(baseMergePath),merge_base_file);
+        TargetFile targetFile = new TargetFile(new File(baseMergePath),merge_base_file,separator_flag);
         CoverageBuilder coverageBuilder = new CoverageBuilder();
         ExecFileLoader execFileLoader = new ExecFileLoader();
         try {
@@ -367,7 +367,7 @@ public class CoverageCollectServiceImpl implements ICoverageCollectService {
         String packageName  = sourceFilePath;
         String basePath = fileCommonExecUtil.JointPath(exec_file_path,projectName,versionName,separator_flag);
         String packagePath = packageName.replace("/",separator_flag);
-        String sourcePath = basePath+separator_flag+"source"+separator_flag+"src"+separator_flag+packagePath+separator_flag+sourceName;
+        String sourcePath = basePath+separator_flag+"source"+separator_flag+"src"+separator_flag+"main"+separator_flag+"java"+separator_flag+packagePath+separator_flag+sourceName;
         List<String> list = new ArrayList<>();
         File file = new File(sourcePath);
         FileReader fileReader = null;
