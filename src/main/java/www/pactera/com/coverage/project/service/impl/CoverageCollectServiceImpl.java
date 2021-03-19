@@ -1,5 +1,6 @@
 package www.pactera.com.coverage.project.service.impl;
 
+import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.JsonArray;
@@ -291,6 +292,7 @@ public class CoverageCollectServiceImpl implements ICoverageCollectService {
             return new ResponseData<>(SystemMessageEnum.PARAMETER_LACK_QUERY_COVERAGE.getCode(),SystemMessageEnum.PARAMETER_LACK_QUERY_COVERAGE.getMsg(), null);
         }
         List<SourcePathInfoDO> sourcePathInfoDOList = sourcePathInfoDOMapper.selectProjectFile(projectName,versionNumber,operator);
+        System.out.println(sourcePathInfoDOList.size());
         Map<String,Data> dataMap = new HashMap<>();
         for (SourcePathInfoDO sourcePathInfoDO: sourcePathInfoDOList) {
             String packagePath = sourcePathInfoDO.getPackagePath();
@@ -315,9 +317,10 @@ public class CoverageCollectServiceImpl implements ICoverageCollectService {
                .totalLine(coverageInfoDO.getTotalLine())
                .coverageLine(coverageInfoDO.getCoverageLine())
                .coverageRate(coverageInfoDO.getCoverageRate())
-               .data(buildProjectStructure2(sourcePathInfoDOList))
+               .data(buildProjectStructure3(sourcePathInfoDOList))
                .coverageMap(dataMap)
                .build();
+        System.out.println("down");
         return new ResponseData<>(SystemMessageEnum.SUCCESS.getCode(), SystemMessageEnum.SUCCESS.getMsg(), projectCoverageRespDTO);
     }
 
@@ -391,10 +394,6 @@ public class CoverageCollectServiceImpl implements ICoverageCollectService {
         SourcesGainDTO sourcesGainDTO = new SourcesGainDTO();
         sourcesGainDTO.setSourceResult(list);
         return new ResponseData<>(SystemMessageEnum.SUCCESS.getCode(),SystemMessageEnum.SUCCESS.getMsg(),sourcesGainDTO);
-
-    }
-
-    public void updateRecordCoverageStatus(CollectCoverageReqDTO reqDTO,String username){
 
     }
 
@@ -529,6 +528,91 @@ public class CoverageCollectServiceImpl implements ICoverageCollectService {
         return data;*//*
     }*/
 
+    public List<Map<String,Object>> buildProjectStructure3(List<SourcePathInfoDO> sourcePathInfoDOList){
+        List<Map<String,String>> pathAllList  = new ArrayList<>();
+        for (int i = 0; i<sourcePathInfoDOList.size(); i++ ) {
+            Map<String,String> map = new HashMap<>();
+            map.put("user_real_path",sourcePathInfoDOList.get(i).getPackagePath());
+            pathAllList.add(map);
+        }
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("startPath", generateData(pathAllList));
+        HashMap<String, Object> mapObject  = (HashMap<String, Object>)jsonObject.get("startPath");
+        List<Map<String,Object>> object  = (List<Map<String,Object>>)mapObject.get("children");
+        return object;
+    }
+
+    public HashMap<String, Object> generateData(List<Map<String, String>> mapList) {
+        HashMap<String, Object> root = new HashMap<>(8);
+        root.put("label", "start");
+        ArrayList<String> arrayList = new ArrayList<>();
+        root.put("children", arrayList);
+        String onePath = "";
+        String oneFileId = "";
+        for (int i = 0; i < mapList.size(); i++) {
+            oneFileId = mapList.get(i).get("file_id");
+            onePath = zhuanYi(mapList.get(i).get("user_real_path"));
+
+            addPath(root, onePath, oneFileId);
+        }
+        return root;
+    }
+
+    public void addPath(HashMap<String, Object> root, String path, String fileId) {
+        String url = "";
+        StringBuffer urlBuffer = new StringBuffer();
+        if (path.charAt(0) == (char) '/') {
+            path = path.substring(1, path.length());
+        }
+        String[] pathArr = path.split("/");
+        for (int i = 0; i < pathArr.length; i++) {
+            String name = pathArr[i];
+            if (i == 0) {
+                urlBuffer.append(name);
+            } else {
+                url += "/" + name;
+                urlBuffer.append("/").append(name);
+            }
+            url = urlBuffer.toString();
+
+            boolean flag = true;
+            for (HashMap<String, Object> node : (ArrayList<HashMap<String, Object>>) root.get("children")) {
+
+                if (node.get("label").equals(name)) {
+                    root = node;
+                    flag = false;
+                    break;
+                }
+            }
+            if (flag) {
+                HashMap<String, Object> newNode = new HashMap<>(8);
+                newNode.put("label", name);
+                newNode.put("children", new ArrayList<HashMap<String, Object>>());
+                ((ArrayList<HashMap<String, Object>>) root.get("children")).add(newNode);
+                root = newNode;
+            }
+        }
+    }
+
+
+    public String zhuanYi(String path) {
+        //将双引号去掉，将多余的空字符去掉
+        path = path.replaceAll("\"", "").replaceAll(" ", "");
+        if (path.contains("\\\\")) {
+            path = path.replaceAll("\\\\", "/");
+        }
+        if (path.contains("\\")) {
+            path = path.replaceAll("\\\\", "/");
+        }
+        if (path.contains("//")) {
+            path = path.replaceAll("//", "/");
+        }
+        if (path.contains("//")) {
+            path = path.replaceAll("//", "/");
+        }
+        return path;
+    }
+
 
     public String buildProjectStructure2(List<SourcePathInfoDO> sourcePathInfoDOList){
      /*   String projectName = projectCoverageReqDTO.getProjectName();
@@ -575,10 +659,14 @@ public class CoverageCollectServiceImpl implements ICoverageCollectService {
                 seracherItem(jsonObject,list);
             }
         }
+        System.out.println(jsonArray.toString());
         return jsonArray.toString();
 
     }
+    private static long count = 0;
+
     public void seracherItem(JsonObject jsonObject,List<Map<String, String>> list){
+        //System.out.println(count++);
         JsonArray jsonArray=new JsonArray();
         try{
             jsonObject.add("children",jsonArray);
@@ -597,10 +685,6 @@ public class CoverageCollectServiceImpl implements ICoverageCollectService {
             System.out.println(jsonObject);
             throw new NullPointerException();
         }
-
-
     }
-
-
 
 }

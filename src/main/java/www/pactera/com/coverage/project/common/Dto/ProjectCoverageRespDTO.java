@@ -4,6 +4,7 @@ import lombok.*;
 import www.pactera.com.coverage.project.common.BaseEntity.BaseDTO;
 import www.pactera.com.coverage.project.common.BaseEntity.Data;
 
+import java.util.List;
 import java.util.Map;
 
 
@@ -36,7 +37,7 @@ public class ProjectCoverageRespDTO extends BaseDTO {
 
     private Map<String, Data> coverageMap;
 
-    private String data;
+    private List<Map<String,Object>> data;
 
 
 
